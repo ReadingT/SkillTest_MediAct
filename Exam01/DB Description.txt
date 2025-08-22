@@ -1,0 +1,25 @@
+1.#ตาราง users สำหรับเก็บข้อมูลผู้ใช้งานระบบ (ในที่นี้คือ หัวหน้าพยาบาล และ พยาบาล ครับ)
+โดยมีคอลัมน์
+	-id เป็น Primary Key ของตาราง users
+	-name เก็บ ชื่อ-นามสกุล
+	-email เก็บ ข้อมูลอีเมล (กำหนดเป็น Unique Key)
+	-password_hash เก็บข้อมูล password ที่ทำการเข้ารหัสแล้ว (ตามมาตรฐานความปลอดภัยของระบบ password ที่ทำการบันทึกลงในฐานข้อมูล จะไม่เก็บบันทึกในรูปแบบของ plain text แต่จะทำการ Hash โดยใช้ IPasswordHasher)
+	-Role เก็บสิทธิ์ของผู้ใช้ (Data type ผมขอใช้เป็น string ที่กำหนดค่าไว้ชัดเจน เช่น Nurse, HeadNurse นะครับ)
+
+2.#ตาราง shifts สำหรับเก็บข้อมูลเวรการทำงานของพยาบาล (Master Data)
+	-id เป็น Primary Key  ของตาราง shifts
+	-shift_date เก็บวันที่ของเวรการทำงาน
+	-start_time เวลาเริ่มต้นของเวรการทำงาน
+	-end_time เวลาสิ้นสุดของเวรการทำงาน
+
+3.#ตาราง shift_assignments ตารางเชื่อมระหว่าง Table users และ Table shifts  เพื่อระบุข้อมูลตารางเวรของแต่ละคน
+	-id เป็น Primary Key  ของตาราง shift_assignments
+	-user_id เป็น Foreign key (Primary key จากตาราง Users)
+	-shift_id เป็น Foreign key (Primary key จากตาราง shifts)
+
+4.#ตาราง leave_requests ตารางสำหรับเก็บคำร้องขอลา
+	-id เป็น Primary Key  ของตาราง leave_requests
+	-shift_assignment_id เป็น Foreign Key จาก Table shift_assignments เพื่อใช้อ้างอิงเวรการทำงานที่ถูกมอบหมายที่จะทำการลา (Primary key จากตาราง shift_assignments)
+	-reason เก็บข้อมูลเหตุผลในการลา
+	-status เก็บสถานะของคำขอ (Data type ผมขอใช้เป็น string ที่กำหนดค่าไว้ชัดเจน เช่น  Pending, Approved, Rejected นะครับ)
+	-approved_by เป็น Foreign Key จาก Table users เพื่อใช้อ้างอิง Users.id ของหัวหน้าพยาบาลที่ทำการอนุมัติ หรือปฏิเสธ (กำหนดเป็นค่า NULL ไว้ก่อนหากยังไม่มีการตัดสินใจ)

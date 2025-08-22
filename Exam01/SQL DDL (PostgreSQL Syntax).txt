@@ -1,0 +1,40 @@
+--ตารางผู้ใช้งาน
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('Nurse', 'HeadNurse'))
+);
+
+--ตารางเวรพยาบาล
+CREATE TABLE shifts (
+    id SERIAL PRIMARY KEY,
+    shift_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    UNIQUE(shift_date, start_time, end_time) --ป้องกันการสร้างเวรซ้ำ
+);
+
+--ตารางการมอบหมายเวรพยาบาล
+CREATE TABLE shift_assignments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    shift_id INTEGER NOT NULL REFERENCES shifts(id) ON DELETE CASCADE,
+    UNIQUE(user_id, shift_id) --ป้องกันการมอบหมายพยาบาลคนเดิมเข้าเวรเซ้ำ
+);
+
+--ตารางคำร้องขอลา
+CREATE TABLE leave_requests (
+    id SERIAL PRIMARY KEY,
+    shift_assignment_id INTEGER NOT NULL REFERENCES shift_assignments(id) ON DELETE CASCADE,
+    reason TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'Pending' CHECK (status IN ('Pending', 'Approved', 'Rejected')),
+    --approved_by กำหนดค่าเป็น NULL ไว้ก่อนหากยังไม่ได้รับการอนุมัติ
+    approved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+--สร้าง Index เพื่อเพิ่มประสิทธิภาพ และความรวดเร็วในการค้นหาข้อมูล
+CREATE INDEX idx_shift_assignments_user_id ON shift_assignments(user_id);
+CREATE INDEX idx_leave_requests_status ON leave_requests(status);
